@@ -1,73 +1,110 @@
 #!  /usr/bin/env python3
 
 import argparse
+import configparser
 import json
 import logging
 import os
 import requests
 import sys
 
-url = 'https://illinois.api.scs.splunk.com/services/collector/event'
-dsp_hec_token = '6b7d14a72f0b8dac0427b1f53bb74d33d8a80ccca422b072f1b20d6aa36407aa:7a627ec2-e70a-495d-9fac-e0b7c5423c9f'
+from splunk_endpoint import SplunkEndpoint
 
-headers = {
-    'authorization' : f'Splunk dsphec:{dsp_hec_token}',
-    'content-type'  : 'application/json; charset=utf8',
-    }
+_NAME_CONFIG = 'splunk.config'
+_PATH_CONFIG_DIR_LIST = [ '.', os.environ.get('HOME') ]
 
-payload = {
-    'event' : \
-        {
-        'message'       : 'Jon Roma was here',
-        'token_name'    : 'uofiurbiamshibtechsvc',
-        },
-    'sourcetype'    : '_json',
-    'source'        : os.path.basename(__file__),
-    'fields'        : \
-        {
-        'forwarder'     : 'SPS',
-        },
-}
+logger = logging.getLogger()
+print(logger)
+logger.setLevel(logging.INFO)
 
 #####
 
+#   pylint: disable=unused-argument
 def main(argv):
-    #   Don't buffer standard output.
-    sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', -1)
+    '''Main routine.'''
+    #   Standard output is to be line-buffered.
+    sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 1)
 
-    #   Create parser.
     parser = argparse.ArgumentParser()
+
+    parser.add_argument \
+        ('--endpoint', dest='endpoint', action='store', required=True,
+         help='destination Splunk endpoint')
 
     parser.add_argument \
         ('--verbose', dest='verbose', action='count', default=0,
          help='verbosity level')
 
-    #   Parse arguments.
+    #   pylint: disable=unused-variable
     arg = parser.parse_args()
 
-    logging.basicConfig(level=logging.INFO)
+    #   Suppress unwanted log messages from urllib3 module.
+    logging.getLogger('urllib3').setLevel(logging.INFO)
 
-    filename = os.path.basename(__file__)
+    #   Initialize logging configuration.
+    logging.basicConfig(level=logging.DEBUG)
 
-    response = requests.post(url, headers=headers, data=json.dumps(payload))
+    #   Process configuration file.
+    config = get_config()
 
-    logging.info(f'request:  {response.request.method} {response.request.url}')
-    logging.info(f'response: {response.status_code} {response.reason}')
-
-    logging.info('----- request headers')
-    for k, v in sorted(response.request.headers.items(), key=lambda x: x[0].lower()):
-        logging.info(f'{k:<16} = {v}')
-
-    logging.info('----- response headers')
-    for k, v in sorted(response.headers.items(), key=lambda x: x[0].lower()):
-        logging.info(f'{k:<16} = {v}')
-
-    if response.status_code != 200:
+    if not config:
         return 1
 
-    data = response.json()
-    print(json.dumps(data, indent=4))
+    try:
+        #   Look up endpoint by name in configuration file and
+        #   extract needed data from the pertinent section.
+        section_name = f'endpoint:{arg.endpoint}'
+
+        splunk_kwarg_dict = \
+            {
+            'token'     : config.get(section_name, 'token'),
+            'type'      : config.get(section_name, 'type'),
+            'url'       : config.get(section_name, 'url'),
+            }
+
+    except configparser.Error as exc:
+        print(exc.message, file=sys.stderr)
+        return 1
+
+    #   Build SplunkEndpoint object with connection data.
+    splunk = SplunkEndpoint(**splunk_kwarg_dict)
+
+    payload = {
+        'event' : \
+            {
+            'message'       : 'Jon Roma was here',
+            'token_name'    : 'uofiurbiamshibtechsvc',
+            },
+        'sourcetype'    : '_json',
+        'source'        : os.path.basename(__file__),
+        'fields'        : \
+            {
+            'forwarder'     : 'SPS',
+            },
+    }
+
+    #   Make Splunk request from hardcoded payload.
+    response = splunk.request(payload)
+
     return 0
+
+#####
+
+def get_config(path=None):
+    config = configparser.ConfigParser()
+
+    for dir_config in _PATH_CONFIG_DIR_LIST:
+        path_config = os.path.join(dir_config, _NAME_CONFIG)
+
+        if os.path.exists(path_config):
+            config.read(path_config)
+            return config
+
+        logging.info(f'{path_config} doesn\'t exist')
+    # end for dir_config.
+
+    logging.error(f'{_NAME_CONFIG}: configuration file not found')
+    return None
 
 #####
 
