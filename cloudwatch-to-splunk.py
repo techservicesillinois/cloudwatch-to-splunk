@@ -1,12 +1,20 @@
 #!  /usr/bin/env python3
 
+# pylint: disable=logging-fstring-interpolation
+
+#   FIXME: This is a temporary docstring.
+'''
+Eventual lambda function to send data from AWS CloudWatch to a supported
+Splunk endpoint. For now, sends pre-formatted data to the endpoint.
+'''
+
 import argparse
 import configparser
-import json
 import logging
 import os
-import requests
 import sys
+
+import requests
 
 from splunk_endpoint import SplunkEndpoint
 
@@ -62,6 +70,7 @@ def main(argv):
             'url'       : config.get(section_name, 'url'),
             }
 
+    #   pylint: disable=try-except-raise
     except configparser.Error as exc:
         print(exc.message, file=sys.stderr)
         return 1
@@ -91,6 +100,7 @@ def main(argv):
 #####
 
 def get_config(path=None):
+    '''Get ConfigParser object.'''
     config = configparser.ConfigParser()
 
     for dir_config in _PATH_CONFIG_DIR_LIST:
