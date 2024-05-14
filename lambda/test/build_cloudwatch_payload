@@ -1,0 +1,84 @@
+#!  /usr/bin/env python3
+
+import argparse
+import base64
+import gzip
+import json
+import logging
+import os
+import sys
+import uuid
+
+from datetime import datetime
+
+logger = logging.getLogger()
+#logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
+
+#####
+
+def main(argv):
+    #   Don't buffer standard output.
+    sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', -1)
+
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument \
+        ('--verbose', dest='verbose', action='count', default=0,
+         help='verbosity level')
+
+    #   Parse command-line arguments.
+    arg = parser.parse_args()
+
+    json_data = sys.stdin.buffer.read()
+
+    if arg.verbose:
+        print('json_data', json_data, file=sys.stderr)
+
+    compressed = gzip.compress(json_data)
+
+    if arg.verbose:
+        logging.info(f'compressed: {compressed}')
+
+    encoded = base64.b64encode(compressed)
+
+    if arg.verbose:
+        logging.info(f'encoded: {encoded}')
+
+    dt_now_string = datetime.now().strftime('%Y/%m/%d')
+
+    log_stream_name = f'{dt_now_string}[$LATEST]{uuid.uuid4().hex}'
+
+    obj = \
+        {
+        'context'   : 
+            {
+            'callbackWaitsForEmptyEventLoop'    : True,
+            'functionVersion'                   : '$LATEST',
+            'functionName'                      : 'cloudwatch-to-splunk',
+            'memoryLimitInMB'                   : '512',
+            'logGroupName'                      : '/aws/lambda/cloudwatch-to-splunk',
+            'logStreamName'                     : log_stream_name,
+            'invokedFunctionArn'                : 'arn:aws:lambda:us-east-2:000000000000:function:cloudwatch-to-splunk',
+            'awsRequestId'                      : str(uuid.uuid4()),
+            },
+
+        'event'     : \
+            {
+            'awslogs'   : \
+                {
+                'data'  : encoded.decode(),
+                },
+            },
+
+        }
+
+    #   Send JSON serialized object to standard output.
+    print(json.dumps(obj, indent=4))
+
+    return 0
+
+#####
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv))

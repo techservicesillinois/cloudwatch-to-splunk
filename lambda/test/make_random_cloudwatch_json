@@ -1,0 +1,135 @@
+#!  /usr/bin/env python3
+
+import argparse
+import os
+import random
+import string
+import sys
+import uuid
+
+from attrdict import AttrDict
+from datetime import datetime, timedelta, timezone
+
+from jinja2 import Environment, Template
+
+FMT_STRFTIME    = '%d/%b/%Y:%H:%M:%S %z' #  [17/Dec/2018:17:28:19 +0000]
+
+TEMPLATE_NAME   = 'cloudwatch.j2'
+
+def generate_random_log_event(dt):
+    str_logevent = r'{0} - - [{1}] \"{2} /{3}/ HTTP/1.1\" 200 {4}'
+
+    fmt_logevent = \
+        (str_logevent.format \
+            (
+            random_ipv4(),
+            dt.strftime(FMT_STRFTIME),
+            random_method(),
+            random_alpha_string(8),
+            random.randrange(40, 1000)
+            )
+        )
+
+    event = \
+        {
+        'id'            : random_digits(40),
+        'timestamp'     : int(1000 * dt.timestamp()),
+        'message'       : fmt_logevent,
+        }
+
+    return event
+
+def main(argv):
+    #   Don't buffer standard output.
+    sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', -1)
+
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument \
+        ('--service', dest='service_name', metavar='name', action='store',
+         required=True, help='service name; used to derive log group name')
+
+    parser.add_argument \
+        ('--verbose', dest='verbose', action='count', default=0,
+         help='verbosity level')
+
+    #   Parse command-line arguments.
+    arg = parser.parse_args()
+
+    now  = datetime.now(timezone.utc)
+
+    jinja_env = Environment()
+
+    with open(TEMPLATE_NAME, 'r') as stream:
+        template = Template(stream.read())
+
+    jinjadict = \
+        {
+        'log_group'     : f'/service/{arg.service_name}',
+        'log_events'    : [],
+        'owner'         : random_digits(16),
+        'uuid'          : str(uuid.uuid4()),
+        }
+
+    event_range = range(random.randrange(1, 6))
+
+    dt_list = []
+    dt_list.extend([random_datetime(now) for r in event_range ])
+    dt_list.sort()
+
+    for i in event_range:
+        event = generate_random_log_event(dt_list[i])
+        jinjadict['log_events'].append(event)
+
+    print(template.render(jinjadict))
+    print(f'generated {len(event_range)} event(s)', file=sys.stderr)
+
+    return 0
+
+#####
+
+def random_alpha_string(l):
+    '''Return random string of lowercase alpha characters of specified length.'''
+    str = ''
+
+    for i in range(l):
+        str += random.choice(string.ascii_lowercase)
+
+    return str
+
+#####
+
+def random_datetime(dt):
+    '''Return timestamp using random timedelta.'''
+    return dt - timedelta \
+        (minutes=random.randrange(0, 12), seconds=random.randrange(0, 60))
+
+#####
+
+def random_digits(l):
+    '''Return random string of digits of specified length.'''
+    digits = ''
+
+    for i in range(l):
+        digits += random.choice(string.digits)
+
+    return digits
+
+#####
+
+def random_ipv4():
+    '''Return random IP address.'''
+    return '.'.join(str(random.randint(0,255)) for _ in range(4))
+
+#####
+
+def random_method():
+    '''Return random HTTP method name from provided list.'''
+    _method_list = [ 'GET', 'HEAD', 'POST', 'PUT' ]
+
+    return random.choice(_method_list)
+
+#####
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv))
