@@ -22,6 +22,26 @@ import botocore
 
 LOGGER = logging.getLogger()
 
+#   TODO:   Prefix with SPLUNK_.
+SSM_PREFIX = os.environ.get('SSM_PREFIX', '/cloudwatch_to_splunk')
+
+LOG_LEVEL = os.environ.get('LOG_LEVEL')
+#   6 * 60 * 1000   # TODO: Python might not do timing in ms.
+#   (360000)
+SPLUNK_CACHE_TTL = os.environ.get('SPLUNK_CACHE_TTL')
+
+#if SPLUNK_LOG_LEVEL in logging.getLevelNamesMapping().keys():
+#   print('*****', LOG_LEVEL)
+    
+try:
+    x = logging.getLevelNamesMapping().get(LOG_LEVEL, logging.ERROR)
+    print(x)
+
+except:
+    raise
+
+sys.exit(0)
+    
 LOGGER.setLevel(logging.INFO)
 #LOGGER.setLevel(logging.DEBUG)
 
@@ -38,9 +58,6 @@ SSM_PARAM_NAMES = \
     'hec_token',
     'sourcetype',
     ]
-
-#   FIXME: Needs to read environment.
-SSM_PREFIX = '/cloudwatch_to_splunk'
 
 #####
 
