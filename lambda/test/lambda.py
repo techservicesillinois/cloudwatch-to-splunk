@@ -28,16 +28,25 @@ SSM_PREFIX = os.environ.get('SSM_PREFIX', '/cloudwatch_to_splunk')
 #   (360000)
 SPLUNK_CACHE_TTL = os.environ.get('SPLUNK_CACHE_TTL')
 
+#   Get and validate log level from environment.
 LOG_LEVEL = logging.getLevelNamesMapping() \
     .get(os.environ.get('LOG_LEVEL'))
 
-if not LOG_LEVEL:
-    LOGGER.warning('bad LOG_LEVEL environment variable; using default')
-    LOG_LEVEL = logging.ERROR
+print('spritz')
 
-LOGGER.setLevel(LOG_LEVEL)
-logging.info(f'LOG_LEVEL {LOG_LEVEL}')
+if LOG_LEVEL:
+    #   Set specified log level.
+    LOGGER.setLevel(LOG_LEVEL)
+
+else:
+    #   Set default log level.
+    LOG_LEVEL = logging.DEBUG
+    LOGGER.setLevel(LOG_LEVEL)
+    logging.warning('LOG_LEVEL missing or invalid; using default')
+
+print(LOGGER.root, LOGGER.hasHandlers())
     
+logging.error('error 2')
 sys.exit(0)
     
 #   Suppress noisy debug logging from botocore and urllib.
