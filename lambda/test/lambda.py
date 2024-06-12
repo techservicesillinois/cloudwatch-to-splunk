@@ -20,8 +20,6 @@ import requests
 import boto3
 import botocore
 
-LOGGER = logging.getLogger()
-
 SSM_PREFIX = os.environ.get('SSM_PREFIX', '/cloudwatch_to_splunk')
 
 #   6 * 60 * 1000   # TODO: Python might not do timing in ms.
@@ -32,23 +30,16 @@ SPLUNK_CACHE_TTL = os.environ.get('SPLUNK_CACHE_TTL')
 LOG_LEVEL = logging.getLevelNamesMapping() \
     .get(os.environ.get('LOG_LEVEL'))
 
-print('spritz')
-
 if LOG_LEVEL:
     #   Set specified log level.
-    LOGGER.setLevel(LOG_LEVEL)
+    logging.getLogger().setLevel(LOG_LEVEL)
 
 else:
     #   Set default log level.
     LOG_LEVEL = logging.DEBUG
-    LOGGER.setLevel(LOG_LEVEL)
+    logging.getLogger().setLevel(LOG_LEVEL)
     logging.warning('LOG_LEVEL missing or invalid; using default')
 
-print(LOGGER.root, LOGGER.hasHandlers())
-    
-logging.error('error 2')
-sys.exit(0)
-    
 #   Suppress noisy debug logging from botocore and urllib.
 logging.getLogger('botocore').setLevel(logging.ERROR)
 logging.getLogger('urllib3').setLevel(logging.ERROR)
@@ -261,6 +252,8 @@ def handler(event: dict[str, Any], context: dict[str, Any]) -> dict[str, Any]:
     logging.info(f'log_group: {log_group}')
 
     ssm_params = get_ssm_params(log_group)
+    log_json(ssm_params, 'ssm_params', logging.INFO)
+    sys.exit(5)
 
     #   TODO: Logger can be returned from cache.
     logger = SplunkLogger(log_group, ssm_params)
