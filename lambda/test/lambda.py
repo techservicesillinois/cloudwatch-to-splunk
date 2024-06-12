@@ -253,6 +253,7 @@ def handler(event: dict[str, Any], context: dict[str, Any]) -> dict[str, Any]:
 
     ssm_params = get_ssm_params(log_group)
     log_json(ssm_params, 'ssm_params', logging.INFO)
+
     sys.exit(5)
 
     #   TODO: Logger can be returned from cache.
