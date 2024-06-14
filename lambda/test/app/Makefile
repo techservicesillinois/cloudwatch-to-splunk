@@ -3,6 +3,7 @@
 LAMBDA_FILE	= app.py
 LAMBDA_ZIP	= cloudwatch-to-splunk.zip
 PACKAGE_DIR	= package
+PIP_COMMAND	= pip install --no-cache-dir --quiet --upgrade
 ZIP_EXCLUDES	= --exclude '*.pyc' '*/__pycache__/*'
 
 REPO := $(shell basename $(shell git remote get-url origin) .git)
@@ -17,7 +18,7 @@ all:
 
 build:
 	mkdir -p $(PACKAGE_DIR)
-	pip install --upgrade --target ./package -r requirements.txt
+	$(PIP_COMMAND) --target $(PACKAGE_DIR) -r requirements.txt
 	(cd $(PACKAGE_DIR); zip -qr ../$(LAMBDA_ZIP) . $(ZIP_EXCLUDES))
 	zip $(LAMBDA_ZIP) $(LAMBDA_FILE)
 
