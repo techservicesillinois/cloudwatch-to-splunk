@@ -1,4 +1,4 @@
-.PHONY: test tfc clean docker sh shell
+.PHONY: build test clean docker shell
 
 LAMBDA_DIR	= app
 LAMBDA_FILE	= app.py
@@ -20,7 +20,7 @@ all:
 build:
 	mkdir -p $(PACKAGE_DIR)
 	$(PIP_COMMAND) --target $(PACKAGE_DIR) -r requirements.txt
-	(cd $(PACKAGE_DIR); zip -qrX9 ../$(LAMBDA_ZIP) . $(ZIP_EXCLUDES))
+	(cd $(PACKAGE_DIR); zip -qX9r ../$(LAMBDA_ZIP) . $(ZIP_EXCLUDES))
 	(cd $(LAMBDA_DIR); zip -qX9 ../$(LAMBDA_ZIP) $(LAMBDA_FILE))
 
 # Launches the Makefile inside a container
