@@ -33,5 +33,5 @@ shell:
 	docker run -it --rm --entrypoint=sh test/$(REPO)
 
 clean:
-	rm -fr $(LAMBDA_ZIP) $(PACKAGE_DIR)
+	rm -fr $(LAMBDA_ZIP) $(PACKAGE_DIR) dist *.egg-info
 #	-docker rmi -f test/$(REPO) >/dev/null 2>&1
