@@ -1,5 +1,6 @@
 .PHONY: test tfc clean docker sh shell
 
+LAMBDA_DIR	= app
 LAMBDA_FILE	= app.py
 LAMBDA_ZIP	= cloudwatch-to-splunk.zip
 PACKAGE_DIR	= package
@@ -19,8 +20,8 @@ all:
 build:
 	mkdir -p $(PACKAGE_DIR)
 	$(PIP_COMMAND) --target $(PACKAGE_DIR) -r requirements.txt
-	(cd $(PACKAGE_DIR); zip -qr ../$(LAMBDA_ZIP) . $(ZIP_EXCLUDES))
-	zip $(LAMBDA_ZIP) $(LAMBDA_FILE)
+	(cd $(PACKAGE_DIR); zip -qrX9 ../$(LAMBDA_ZIP) . $(ZIP_EXCLUDES))
+	(cd $(LAMBDA_DIR); zip -qX9 ../$(LAMBDA_ZIP) $(LAMBDA_FILE))
 
 # Launches the Makefile inside a container
 docker:
