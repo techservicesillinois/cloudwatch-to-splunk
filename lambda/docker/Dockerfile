@@ -1,13 +1,18 @@
 FROM public.ecr.aws/lambda/python:3.12
 
+# ENV TZ='America/Chicago'
+
 # Copy requirements.txt.
 COPY requirements.txt ${LAMBDA_TASK_ROOT}
 
 # Install prerequisite packages.
 RUN pip install -r ${LAMBDA_TASK_ROOT}/requirements.txt
 
-# Copy lambda function.
-COPY lambda_function.py ${LAMBDA_TASK_ROOT}
+RUN pip list
 
-# Set CMD to the lambda handler (could also be done as a parameter override outside of the Dockerfile).
-CMD [ "lambda_function.handler" ]
+# Copy lambda function.
+COPY lambda.py ${LAMBDA_TASK_ROOT}
+
+# Set CMD to the lambda handler (could also be done as a parameter
+# override outside of the Dockerfile).
+CMD [ "lambda.handler" ]

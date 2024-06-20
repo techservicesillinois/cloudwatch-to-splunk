@@ -10,6 +10,7 @@ import sys
 import uuid
 
 from datetime import datetime
+from dateutil.tz import tzlocal
 
 logger = logging.getLogger()
 #logger.setLevel(logging.INFO)
@@ -33,7 +34,7 @@ def main(argv):
     json_data = sys.stdin.buffer.read()
 
     if arg.verbose:
-        print('json_data', json_data, file=sys.stderr)
+        logging.debug(f'json_data: {json_data}')
 
     compressed = gzip.compress(json_data)
 
@@ -45,7 +46,8 @@ def main(argv):
     if arg.verbose:
         logging.info(f'encoded: {encoded}')
 
-    dt_now_string = datetime.now().strftime('%Y/%m/%d')
+    dt_now_string = datetime.now(tzlocal()).strftime('%Y/%m/%d')
+    logging.info(f'dt_now_string: {dt_now_string}')
 
     log_stream_name = f'{dt_now_string}[$LATEST]{uuid.uuid4().hex}'
 

@@ -1,0 +1,30 @@
+{
+    "Statement": [
+        {
+            "Action": [
+                "logs:DescribeLogStreams",
+                "logs:DescribeLogGroups",
+                "logs:CreateLogStream"
+            ],
+            "Effect": "Allow",
+            "Resource": "arn:aws:logs:us-east-2:452834793638:log-group:/aws/lambda/cloudwatch-to-splunk:*",
+            "Sid": ""
+        },
+        {
+            "Action": "logs:PutLogEvents",
+            "Effect": "Allow",
+            "Resource": [
+                "arn:aws:logs:us-east-2:452834793638:log-group:/aws/lambda/cloudwatch-to-splunk:*:*:*",
+                "arn:aws:logs:us-east-2:452834793638:log-group:/aws/lambda/cloudwatch-to-splunk:*"
+            ],
+            "Sid": ""
+        },
+        {
+            "Action": "ssm:GetParameters",
+            "Effect": "Allow",
+            "Resource": "arn:aws:ssm:us-east-2:452834793638:parameter/cloudwatch_to_splunk/*",
+            "Sid": ""
+        }
+    ],
+    "Version": "2012-10-17"
+}
