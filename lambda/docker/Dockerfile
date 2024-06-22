@@ -1,6 +1,6 @@
 FROM public.ecr.aws/lambda/python:3.12
 
-# ENV TZ='America/Chicago'
+ENV TZ='America/Chicago'
 
 # Copy requirements.txt.
 COPY requirements.txt ${LAMBDA_TASK_ROOT}
