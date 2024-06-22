@@ -47,7 +47,9 @@ def main(argv):
         logging.info(f'encoded: {encoded}')
 
     dt_now_string = datetime.now(tzlocal()).strftime('%Y/%m/%d')
-    logging.info(f'dt_now_string: {dt_now_string}')
+
+    if arg.verbose:
+        logging.info(f'dt_now_string: {dt_now_string}')
 
     log_stream_name = f'{dt_now_string}[$LATEST]{uuid.uuid4().hex}'
 

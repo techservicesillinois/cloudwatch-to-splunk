@@ -63,7 +63,9 @@ def main(argv):
     arg = parser.parse_args()
 
     now = datetime.now(tzlocal())
-    logging.info(f'now: {now.isoformat()}')
+
+    if arg.verbose:
+        logging.info(f'now: {now.isoformat()}')
 
     jinja_env = Environment()
 
@@ -85,12 +87,17 @@ def main(argv):
     dt_list.sort()
 
     for i in event_range:
-        logging.info(f'dt_list[{i}]: {dt_list[i]}')
+        if arg.verbose:
+            logging.info(f'dt_list[{i}]: {dt_list[i]}')
+
         event = generate_random_log_event(dt_list[i])
         jinjadict['log_events'].append(event)
 
     print(template.render(jinjadict))
-    logging.info(template.render(jinjadict))
+
+    if arg.verbose:
+        logging.info(template.render(jinjadict))
+
     logging.info(f'generated {len(event_range)} event(s)')
 
     return 0
