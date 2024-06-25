@@ -44,4 +44,8 @@ def handler(event, context):
     logging.info(f'Date: {datetime.now(tzlocal()).isoformat()}')
     log_json(event, 'event', logging.INFO)
     logging.info(context)
+    logging.info(f'Lambda function ARN: {context.invoked_function_arn}')
+    logging.info(f'Lambda request ID:   {context.aws_request_id}')
+    logging.info(f'CloudWatch log stream: {context.log_stream_name}')
+    logging.info(f'CloudWatch log group:  {context.log_group_name}')
     return
