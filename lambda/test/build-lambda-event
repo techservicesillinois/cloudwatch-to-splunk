@@ -52,33 +52,15 @@ def main(argv):
         logging.info(f'dt_now_string: {dt_now_string}')
 
     log_stream_name = f'{dt_now_string}[$LATEST]{uuid.uuid4().hex}'
+    logging.info(log_stream_name)
 
-    obj = \
+    event = \
         {
-        'context'   : 
-            {
-            'callbackWaitsForEmptyEventLoop'    : True,
-            'functionVersion'                   : '$LATEST',
-            'functionName'                      : 'cloudwatch-to-splunk',
-            'memoryLimitInMB'                   : '512',
-            'logGroupName'                      : '/aws/lambda/cloudwatch-to-splunk',
-            'logStreamName'                     : log_stream_name,
-            'invokedFunctionArn'                : 'arn:aws:lambda:us-east-2:000000000000:function:cloudwatch-to-splunk',
-            'awsRequestId'                      : str(uuid.uuid4()),
-            },
-
-        'event'     : \
-            {
-            'awslogs'   : \
-                {
-                'data'  : encoded.decode(),
-                },
-            },
-
+        'awslogs'   : dict(data=encoded.decode()),
         }
 
     #   Send JSON serialized object to standard output.
-    print(json.dumps(obj, indent=4))
+    print(json.dumps(event, indent=4))
 
     return 0
 

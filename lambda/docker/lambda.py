@@ -43,4 +43,5 @@ def handler(event, context):
     logging.info(f'AWS Lambda using Python {sys.version}')
     logging.info(f'Date: {datetime.now(tzlocal()).isoformat()}')
     log_json(event, 'event', logging.INFO)
+    logging.info(context)
     return
