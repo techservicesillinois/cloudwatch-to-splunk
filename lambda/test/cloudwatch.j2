@@ -1,0 +1,18 @@
+{
+    "messageType": "DATA_MESSAGE",
+    "owner": "{{owner}}",
+    "logGroup": "{{log_group}}",
+    "logStream": "lambda-test/{{uuid}}",
+    "subscriptionFilters": [
+        "{{log_group}}-filter"
+    ],
+    "logEvents": [
+    {% for event in log_events %}
+    {
+        "id": "{{ event.id }}",
+        "timestamp": {{ event.timestamp }},
+        "message": "{{ event.message }}"
+        {% if loop.last %}}{% else %}},{% endif %}
+    {% endfor %} {# for event #}
+    ]
+}
